@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTD Token Helper</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px 24px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo .icon {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a202c;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #718096;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    /* Steps */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .step-num {
+      background: #e53e3e;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .step-text {
+      font-size: 15px;
+      color: #2d3748;
+      line-height: 1.5;
+    }
+
+    .step-text b { color: #1a202c; }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-align: center;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .btn:active { opacity: 0.8; }
+
+    .btn-red {
+      background: #e53e3e;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .btn-green {
+      background: #38a169;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .btn-outline {
+      background: white;
+      color: #4a5568;
+      border: 2px solid #e2e8f0;
+    }
+
+    /* Token result box */
+    #result {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .result-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .token-box {
+      background: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #2d3748;
+      word-break: break-all;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .token-box.success {
+      border-color: #68d391;
+      background: #f0fff4;
+    }
+
+    .token-box.error {
+      border-color: #fc8181;
+      background: #fff5f5;
+      color: #c53030;
+    }
+
+    .copied-badge {
+      display: none;
+      background: #38a169;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 24px 0;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #a0aec0;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* Status indicator */
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .dot-green { background: #48bb78; }
+    .dot-red { background: #fc8181; }
+    .dot-yellow { background: #f6e05e; }
+
+    #session-status {
+      font-size: 13px;
+      color: #718096;
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <span class="icon">🛕</span>
+    <h1>TTD Token Helper</h1>
+    <p class="subtitle">Extracts your session token automatically after login</p>
+  </div>
+
+  <div id="session-status">
+    <span class="status-dot dot-yellow"></span>
+    Checking current session...
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Tap <b>"Open TTD Login"</b> below to open the booking site</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Enter your <b>mobile number</b> and complete <b>OTP verification</b></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Come back here and tap <b>"Extract My Token"</b></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">Tap <b>"Copy Token"</b> and paste it in Telegram</div>
+    </div>
+  </div>
+
+  <!-- Step 1: Open TTD -->
+  <a href="https://ttdevasthanams.ap.gov.in/slot-booking?flow=sed&flowIdentifier=sed"
+     target="_blank"
+     class="btn btn-red">
+    🔗 Open TTD Login
+  </a>
+
+  <!-- Step 3: Extract token -->
+  <button class="btn btn-green" onclick="extractToken()">
+    🔍 Extract My Token
+  </button>
+
+  <!-- Result -->
+  <div id="result">
+    <div class="result-label">Your Auth Token</div>
+    <div class="token-box" id="token-display">—</div>
+    <button class="btn btn-outline" onclick="copyToken()" id="copy-btn">
+      📋 Copy Token
+    </button>
+    <div class="copied-badge" id="copied-badge">✅ Copied! Now paste in Telegram</div>
+
+    <div class="divider"></div>
+
+    <div class="result-label">All Cookie Values (for manual update)</div>
+    <div class="token-box" id="all-cookies">—</div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="note">
+    This page only reads cookies from your browser.<br>
+    Nothing is sent anywhere except Telegram by you.
+  </p>
+</div>
+
+<script>
+  // Parse cookies into object
+  function getCookies() {
+    const cookies = {};
+    document.cookie.split(";").forEach(c => {
+      const [k, v] = c.trim().split("=");
+      if (k) cookies[k.trim()] = v ? decodeURIComponent(v.trim()) : "";
+    });
+    return cookies;
+  }
+
+  // Check session status on load
+  function checkSessionStatus() {
+    const cookies = getCookies();
+    const statusEl = document.getElementById("session-status");
+
+    if (cookies.authtoken && cookies.valid_till) {
+      const validTill = new Date(cookies.valid_till.replace(" ", "T"));
+      const now = new Date();
+      const diffMins = Math.floor((validTill - now) / 60000);
+
+      if (diffMins > 10) {
+        statusEl.innerHTML = `<span class="status-dot dot-green"></span>Session active — expires in ${diffMins} minutes`;
+      } else if (diffMins > 0) {
+        statusEl.innerHTML = `<span class="status-dot dot-yellow"></span>Session expiring soon — ${diffMins} minutes left`;
+      } else {
+        statusEl.innerHTML = `<span class="status-dot dot-red"></span>Session expired — please login again`;
+      }
+    } else {
+      statusEl.innerHTML = `<span class="status-dot dot-red"></span>No active session found — please login first`;
+    }
+  }
+
+  function extractToken() {
+    const cookies = getCookies();
+    const resultDiv = document.getElementById("result");
+    const tokenDisplay = document.getElementById("token-display");
+    const allCookies = document.getElementById("all-cookies");
+
+    resultDiv.style.display = "block";
+
+    const authtoken = cookies["authtoken"];
+
+    if (authtoken) {
+      tokenDisplay.textContent = authtoken;
+      tokenDisplay.className = "token-box success";
+
+      // Show all relevant cookies
+      const relevant = ["user_id", "authtoken", "valid_till", "valid_till_in_utc"];
+      const lines = relevant
+        .filter(k => cookies[k])
+        .map(k => `${k}: ${cookies[k]}`)
+        .join("\n");
+      allCookies.textContent = lines || "No additional cookies found";
+
+      // Scroll to result
+      resultDiv.scrollIntoView({ behavior: "smooth" });
+    } else {
+      tokenDisplay.textContent = "❌ No authtoken found. Please complete the TTD login first, then come back and try again.";
+      tokenDisplay.className = "token-box error";
+      allCookies.textContent = "No TTD cookies found.";
+    }
+
+    checkSessionStatus();
+  }
+
+  function copyToken() {
+    const token = document.getElementById("token-display").textContent;
+    if (!token || token.startsWith("❌")) return;
+
+    navigator.clipboard.writeText(token).then(() => {
+      document.getElementById("copied-badge").style.display = "block";
+      document.getElementById("copy-btn").textContent = "✅ Copied!";
+      setTimeout(() => {
+        document.getElementById("copy-btn").textContent = "📋 Copy Token";
+        document.getElementById("copied-badge").style.display = "none";
+      }, 3000);
+    }).catch(() => {
+      // Fallback for older browsers
+      const el = document.createElement("textarea");
+      el.value = token;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      document.getElementById("copied-badge").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("copied-badge").style.display = "none";
+      }, 3000);
+    });
+  }
+
+  // Check on load
+  checkSessionStatus();
+</script>
+
+</body>
+</html>
